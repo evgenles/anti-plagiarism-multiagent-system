@@ -1,0 +1,14 @@
+package com.diit.antiplagiarism.environment
+
+import io.sarl.lang.core.Space
+import java.util.UUID
+import io.sarl.lang.core.Event
+
+interface IPhysicSpace extends Space {
+
+	def getCreatorID() : UUID
+
+	def putOnEventBus(^event : Event, scope : UUID) : Boolean
+
+	def putOnNetwork(^event : Event, scope : UUID)
+}
