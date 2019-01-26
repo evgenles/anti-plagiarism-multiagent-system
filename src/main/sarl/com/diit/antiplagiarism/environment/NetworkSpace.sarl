@@ -12,8 +12,9 @@ import io.sarl.lang.core.Event
 import io.sarl.lang.core.EventListener
 import javax.inject.Inject
 import io.janusproject.services.network.NetworkService
+import io.sarl.lang.core.Address
 
-abstract class NetworkPhysicSpaceImpl extends AbstractEventSpace implements IPhysicSpace {
+class NetworkSpace extends AbstractEventSpace implements IPhysicSpace {
 	
 	val entities : DMap<UUID, Serializable>
     val KEY_CREATORID : String = "creatorID"
@@ -44,6 +45,20 @@ abstract class NetworkPhysicSpaceImpl extends AbstractEventSpace implements IPhy
 		this.executorService.submit(new com.diit.antiplagiarism.environment.AsyncRunner(^agent, ^event));
 	}
 
+	def bindBody(^agent : EventListener)  {
+		var a = new Address(spaceID, ^agent.ID)
+		synchronized (this.participantInternalDataStructure) {
+			this.participantInternalDataStructure.registerParticipant(a, ^agent)
+		}
+		
+	}
+
+	def unbindBody(^agent : EventListener) {
+		this.entities.remove(^agent.ID)
+		synchronized (this.participantInternalDataStructure) {
+			this.participantInternalDataStructure.unregisterParticipant(^agent)
+		}
+	}
 	def putOnEventBus(^event : Event, scope : UUID ) : Boolean {
 			synchronized (this.agents) {
 				for (^agent as EventListener : this.agents.listeners) {
@@ -56,6 +71,7 @@ abstract class NetworkPhysicSpaceImpl extends AbstractEventSpace implements IPhy
 			}
 		}
 
+	
 	def putOnNetwork(^event : Event, scope : UUID) {
 			try {
 				this.network.publish(new UUIDScope(scope), ^event );

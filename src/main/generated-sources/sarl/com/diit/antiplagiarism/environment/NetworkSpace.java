@@ -10,6 +10,7 @@ import io.janusproject.services.network.NetworkService;
 import io.sarl.lang.annotation.SarlElementType;
 import io.sarl.lang.annotation.SarlSpecification;
 import io.sarl.lang.annotation.SyntheticMember;
+import io.sarl.lang.core.Address;
 import io.sarl.lang.core.Event;
 import io.sarl.lang.core.EventListener;
 import io.sarl.lang.core.SpaceID;
@@ -27,7 +28,7 @@ import org.eclipse.xtext.xbase.lib.Pure;
 @SarlSpecification("0.8")
 @SarlElementType(10)
 @SuppressWarnings("all")
-public abstract class NetworkPhysicSpaceImpl extends AbstractEventSpace implements IPhysicSpace {
+public class NetworkSpace extends AbstractEventSpace implements IPhysicSpace {
   private final DMap<UUID, Serializable> entities;
   
   private final String KEY_CREATORID = "creatorID";
@@ -37,7 +38,7 @@ public abstract class NetworkPhysicSpaceImpl extends AbstractEventSpace implemen
   @Inject
   private NetworkService network;
   
-  public NetworkPhysicSpaceImpl(final SpaceID id, final DistributedDataStructureService factory) {
+  public NetworkSpace(final SpaceID id, final DistributedDataStructureService factory) {
     super(id, factory);
     String _string = id.toString();
     UniqueAddressParticipantRepository<UUID> _uniqueAddressParticipantRepository = new UniqueAddressParticipantRepository<UUID>((_string + "-antiplagiarism-agents"), factory);
@@ -61,6 +62,22 @@ public abstract class NetworkPhysicSpaceImpl extends AbstractEventSpace implemen
   public Future<?> fireAsync(final EventListener agent, final Event event) {
     com.diit.antiplagiarism.environment.AsyncRunner _asyncRunner = new com.diit.antiplagiarism.environment.AsyncRunner(agent, event);
     return this.executorService.submit(_asyncRunner);
+  }
+  
+  public void bindBody(final EventListener agent) {
+    SpaceID _spaceID = this.getSpaceID();
+    UUID _iD = agent.getID();
+    Address a = new Address(_spaceID, _iD);
+    synchronized (this.getParticipantInternalDataStructure()) {
+      this.getParticipantInternalDataStructure().registerParticipant(a, agent);
+    }
+  }
+  
+  public void unbindBody(final EventListener agent) {
+    this.entities.remove(agent.getID());
+    synchronized (this.getParticipantInternalDataStructure()) {
+      this.getParticipantInternalDataStructure().unregisterParticipant(agent);
+    }
   }
   
   public Boolean putOnEventBus(final Event event, final UUID scope) {
@@ -103,7 +120,7 @@ public abstract class NetworkPhysicSpaceImpl extends AbstractEventSpace implemen
       return false;
     if (getClass() != obj.getClass())
       return false;
-    NetworkPhysicSpaceImpl other = (NetworkPhysicSpaceImpl) obj;
+    NetworkSpace other = (NetworkSpace) obj;
     if (!Objects.equals(this.KEY_CREATORID, other.KEY_CREATORID)) {
       return false;
     }

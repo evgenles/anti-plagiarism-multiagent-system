@@ -1,0 +1,15 @@
+package com.diit.antiplagiarism.environment
+
+import io.sarl.lang.core.SpaceSpecification
+import javax.inject.Inject
+import io.janusproject.services.distributeddata.DistributedDataStructureService
+import io.sarl.lang.core.SpaceID
+
+class NetworkSpaceSpecification implements SpaceSpecification<IPhysicSpace> {
+	@Inject
+	var factory : DistributedDataStructureService
+
+	def create(id : SpaceID, params : Object*) : IPhysicSpace {
+		return new NetworkSpace(id, factory)
+	}
+}
