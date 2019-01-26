@@ -1,0 +1,10 @@
+package com.diit.antiplagiarism.events
+
+import com.diit.antiplagiarism.models.TaskModel
+
+event TaskToDo{
+	var Task : TaskModel
+	new (task : TaskModel) {
+		Task = task
+	} 
+}

@@ -1,0 +1,11 @@
+package com.diit.antiplagiarism.helpers
+
+import java.net.InetAddress
+
+class DomainHelper{
+	
+	static def GetIp : String{
+	 return	InetAddress.getLocalHost().getHostAddress()
+	}
+	
+}

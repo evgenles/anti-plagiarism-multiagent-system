@@ -12,36 +12,33 @@ import io.sarl.core.Initialize
 import io.sarl.core.Logging
 import io.sarl.core.MemberJoined
 import io.sarl.core.MemberLeft
-import io.sarl.core.DefaultContextInteractions
-import io.sarl.core.Behaviors
-import com.diit.antiplagiarism.environment.IPhysicSpace
-import com.diit.antiplagiarism.environment.NetworkSpaceSpecification
-import java.util.UUID
 import com.diit.antiplagiarism.helpers.DomainHelper
+import java.util.List
 import com.diit.antiplagiarism.events.TaskAddedEvent
+import com.diit.antiplagiarism.models.TaskModel
 
 /** 
- * @author lesov
+ * @author evgenles
  * 
  */
-agent EmployerAgent {
-	uses DefaultContextInteractions, Logging, Behaviors
+agent MasterAgent {
+	uses Logging
 	
-	//var ^space : IPhysicSpace
+	var tasks : List<TaskModel>
 
 	on Initialize {
-		//^space = defaultContext.getOrCreateSpaceWithSpec(typeof(NetworkSpaceSpecification), UUID.randomUUID)
-	    //^space.bindBody(asEventListener)
 		// Event trigger before the agent begin to live or to be used.
 		// You should put all the initialization statements in this block of code.
-		info("Employer started on " + DomainHelper.GetIp)
-	}
+		info("Master started on " + DomainHelper.GetIp)
 
-	def AddTask(fileData : Byte[]) {
-		info("Employer create task with file data")
-	    emit(new TaskAddedEvent(fileData))
 	}
-	
+	on TaskAddedEvent {
+	   if(occurrence.url!==null)
+	   {
+	   	tasks.add(new TaskModel(occurrence.url.split("/").last, occurrence.url))
+	   	
+	   }
+	}
 
 	on Destroy {
 		// Event trigger when the agent is destroyed from the system.
@@ -58,11 +55,14 @@ agent EmployerAgent {
 	}
 
 	on ContextJoined {
+		 if(!occurrence.fromMe) info("Joined: " + occurrence.class + " Address: "+ occurrence.source)
 		// Event trigger when an agent of the level joins a shared context.
 		// Sent to a agent of the same level.
 	}
 
 	on ContextLeft {
+		if(!occurrence.fromMe) info("Left: " + occurrence.class + " Address: " + occurrence.source)
+		
 		// Event trigger when an agent of the level jleaves a shared context.
 		// Sent to a agent of the same level.
 	}

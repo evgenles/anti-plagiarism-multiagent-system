@@ -1,0 +1,17 @@
+package com.diit.antiplagiarism.models
+
+import java.util.UUID
+
+class TaskModel {
+	var TaskId : UUID
+ 	var Name : String
+	var Percentage : int
+	var Path : String
+	var AgentIp : String
+	var State : String
+	
+	new (name : String, path : String){
+		Name = name
+		Path = path
+	}
+}

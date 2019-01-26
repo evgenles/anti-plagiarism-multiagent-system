@@ -2,8 +2,10 @@ package com.diit.antiplagiarism.environment;
 
 import io.sarl.lang.annotation.SarlElementType;
 import io.sarl.lang.annotation.SarlSpecification;
+import io.sarl.lang.core.Address;
 import io.sarl.lang.core.Event;
 import io.sarl.lang.core.EventListener;
+import io.sarl.lang.core.Scope;
 import io.sarl.lang.core.Space;
 import io.sarl.lang.util.SynchronizedSet;
 import java.util.UUID;
@@ -25,4 +27,6 @@ public interface IPhysicSpace extends Space {
   public abstract void bindBody(final EventListener agent);
   
   public abstract void unbindBody(final EventListener agent);
+  
+  public abstract void emit(final UUID eventSource, final Event event, final Scope<Address> scope);
 }

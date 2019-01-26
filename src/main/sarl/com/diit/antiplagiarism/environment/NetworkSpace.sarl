@@ -16,6 +16,7 @@ import io.sarl.lang.core.Address
 
 class NetworkSpace extends AbstractEventSpace implements IPhysicSpace {
 	
+	
 	val entities : DMap<UUID, Serializable>
     val KEY_CREATORID : String = "creatorID"
     

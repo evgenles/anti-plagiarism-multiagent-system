@@ -1,0 +1,19 @@
+package com.diit.antiplagiarism.events
+
+import java.util.UUID
+import com.diit.antiplagiarism.models.StateEnum
+
+event FileDownloadEvent{
+	var Url : String
+	var State : StateEnum
+	var Description :String
+	var TaskId : UUID
+	
+	new (url : String, state : StateEnum, taskId : UUID, description : String = ""){
+		Url = url
+		State = state
+		TaskId = taskId
+		Description = description
+	}
+	
+}

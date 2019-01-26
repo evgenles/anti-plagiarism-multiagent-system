@@ -1,0 +1,18 @@
+package com.diit.antiplagiarism.events
+
+import com.diit.antiplagiarism.models.TaskModel
+import com.diit.antiplagiarism.models.StateEnum
+
+event SingleAnalizerComplited {
+	var Task : TaskModel
+	var State : StateEnum
+	var AnalizerType : String
+	var Description : String
+	
+	new (task : TaskModel, state : StateEnum, analizerType : String, description: String = "") {
+		Task = task
+		State = state
+		AnalizerType = analizerType
+		Description = description
+	}
+}

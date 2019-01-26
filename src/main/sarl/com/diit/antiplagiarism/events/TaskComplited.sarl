@@ -1,0 +1,12 @@
+package com.diit.antiplagiarism.events
+
+import java.util.UUID
+
+event TaskComplited{
+  var TaskId :	UUID
+  var State : String
+  new (taskId : UUID, state: String){
+  	TaskId = taskId
+  	State = state
+  }
+}

@@ -1,0 +1,15 @@
+package com.diit.antiplagiarism.events
+
+event TaskAddedEvent{
+	var url : String
+	var fileData : Byte[]
+
+	new (url : String){
+		this.url = url
+	}
+	
+	new (file : Byte[])
+	{
+		this.fileData = fileData
+	}
+}
