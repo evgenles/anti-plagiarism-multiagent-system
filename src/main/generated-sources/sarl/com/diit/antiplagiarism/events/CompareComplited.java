@@ -42,4 +42,7 @@ public class CompareComplited extends Event {
     super.toString(builder);
     builder.add("Task", this.Task);
   }
+  
+  @SyntheticMember
+  private final static long serialVersionUID = 1209321034L;
 }

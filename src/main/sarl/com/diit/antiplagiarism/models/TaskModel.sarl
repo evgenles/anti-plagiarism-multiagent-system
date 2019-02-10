@@ -3,15 +3,18 @@ package com.diit.antiplagiarism.models
 import java.util.UUID
 
 class TaskModel {
-	var TaskId : UUID
- 	var Name : String
-	var Percentage : int
-	var Path : String
-	var AgentIp : String
-	var State : String
+	public var TaskId : UUID
+    public var Name : String
+	public var Percentage : int
+	public var Path : String
+	public var AgentIp : String
+	public var State : String
+	public var Url : String
 	
-	new (name : String, path : String){
+	new (name : String, url : String){
 		Name = name
-		Path = path
+		Url = url
+		TaskId = UUID.randomUUID
 	}
+	
 }

@@ -12,55 +12,49 @@ import io.sarl.core.Initialize
 import io.sarl.core.Logging
 import io.sarl.core.MemberJoined
 import io.sarl.core.MemberLeft
-import com.diit.antiplagiarism.helpers.DomainHelper
-import java.util.List
-import com.diit.antiplagiarism.events.TaskAddedEvent
-import com.diit.antiplagiarism.models.TaskModel
 import com.diit.antiplagiarism.events.TaskToDo
 import io.sarl.core.DefaultContextInteractions
+import com.diit.antiplagiarism.helpers.DomainHelper
+import java.io.InputStream
+import java.net.URL
+import java.nio.file.Paths
+import java.io.File
+import java.nio.file.StandardCopyOption
+import java.nio.file.Files
 import com.diit.antiplagiarism.events.FileDownloadEvent
 import com.diit.antiplagiarism.models.StateEnum
-import com.diit.antiplagiarism.events.TaskToAnalize
-import com.diit.antiplagiarism.events.TaskComplited
 
 /** 
  * @author evgenles
  * 
  */
-agent MasterAgent {
+agent DownloaderAgent {
 	uses DefaultContextInteractions, Logging
-	
-	var tasks : List<TaskModel>
-
+	val baseDir = "~/APMSDocs"
 	on Initialize {
 		// Event trigger before the agent begin to live or to be used.
 		// You should put all the initialization statements in this block of code.
-		info("Master started on " + DomainHelper.GetIp)
+		info("Downloader agent started on " + DomainHelper.GetIp)
 
 	}
-	on TaskAddedEvent {
-	   if(occurrence.url!==null)
-	   {
-	   	var task = new TaskModel(occurrence.url.split("/").last, occurrence.url)
-	   	tasks.add(task)
-	   	info("Download started task: " + task.TaskId + " from url: " + task.Url)
-	   	emit(new TaskToDo(task))
-	   }
-	}
-	on FileDownloadEvent{
-		if(occurrence.State  == StateEnum.Success)
-		{
-			val task = tasks.filter[TaskId == occurrence.TaskId].last
-			info("Downloaded "+ task.TaskId + " from url " + occurrence.Url)
-			emit(new TaskToAnalize(task))
-		}
-		else{
-			error("Download failed " + occurrence.TaskId + " from url: "+ occurrence.Url + " Description: "+ occurrence.Description)
-			emit(new TaskComplited(occurrence.TaskId, StateEnum.Failed))
-		}
+
+	on TaskToDo {
+		var task = occurrence.Task
+		try{
+			new File(baseDir).mkdir
+			val path = baseDir + "/" + task.Name
+			var in = new URL(task.Url).openStream
 			
+			Files.copy(in, Paths.get(path), StandardCopyOption.REPLACE_EXISTING)
+			task.Path = path
+			emit(new FileDownloadEvent(task.Url, StateEnum.Success, task.TaskId))
+		}
+		catch (e : Exception) {
+			emit(new FileDownloadEvent(task.Url, StateEnum.Failed, task.TaskId, e.toString))
+		}
+		
 	}
-
+	
 	on Destroy {
 		// Event trigger when the agent is destroyed from the system.
 		// You should put all the resource releasing statements in this block of code.
@@ -76,14 +70,11 @@ agent MasterAgent {
 	}
 
 	on ContextJoined {
-		 if(!occurrence.fromMe) info("Joined: " + occurrence.class + " Address: "+ occurrence.source)
 		// Event trigger when an agent of the level joins a shared context.
 		// Sent to a agent of the same level.
 	}
 
 	on ContextLeft {
-		if(!occurrence.fromMe) info("Left: " + occurrence.class + " Address: " + occurrence.source)
-		
 		// Event trigger when an agent of the level jleaves a shared context.
 		// Sent to a agent of the same level.
 	}

@@ -11,21 +11,24 @@ import org.eclipse.xtext.xbase.lib.Pure;
 @SarlElementType(10)
 @SuppressWarnings("all")
 public class TaskModel {
-  private UUID TaskId;
+  public UUID TaskId;
   
-  private String Name;
+  public String Name;
   
-  private int Percentage;
+  public int Percentage;
   
-  private String Path;
+  public String Path;
   
-  private String AgentIp;
+  public String AgentIp;
   
-  private String State;
+  public String State;
   
-  public TaskModel(final String name, final String path) {
+  public String Url;
+  
+  public TaskModel(final String name, final String url) {
     this.Name = name;
-    this.Path = path;
+    this.Url = url;
+    this.TaskId = UUID.randomUUID();
   }
   
   @Override
@@ -56,6 +59,9 @@ public class TaskModel {
     if (!Objects.equals(this.State, other.State)) {
       return false;
     }
+    if (!Objects.equals(this.Url, other.Url)) {
+      return false;
+    }
     return super.equals(obj);
   }
   
@@ -71,6 +77,7 @@ public class TaskModel {
     result = prime * result + Objects.hashCode(this.Path);
     result = prime * result + Objects.hashCode(this.AgentIp);
     result = prime * result + Objects.hashCode(this.State);
+    result = prime * result + Objects.hashCode(this.Url);
     return result;
   }
 }

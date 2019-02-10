@@ -90,4 +90,7 @@ public class SingleAnalizerComplited extends Event {
     builder.add("AnalizerType", this.AnalizerType);
     builder.add("Description", this.Description);
   }
+  
+  @SyntheticMember
+  private final static long serialVersionUID = 4192360559L;
 }

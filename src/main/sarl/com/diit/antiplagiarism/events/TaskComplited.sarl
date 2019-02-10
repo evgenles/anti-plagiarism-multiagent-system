@@ -1,11 +1,12 @@
 package com.diit.antiplagiarism.events
 
 import java.util.UUID
+import com.diit.antiplagiarism.models.StateEnum
 
 event TaskComplited{
   var TaskId :	UUID
-  var State : String
-  new (taskId : UUID, state: String){
+  var State : StateEnum
+  new (taskId : UUID, state: StateEnum){
   	TaskId = taskId
   	State = state
   }
