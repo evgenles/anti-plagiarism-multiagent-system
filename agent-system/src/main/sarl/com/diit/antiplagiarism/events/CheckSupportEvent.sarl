@@ -1,0 +1,18 @@
+package com.diit.antiplagiarism.events
+
+import java.util.UUID
+import com.diit.antiplagiarism.models.TaskModel
+
+event CheckSupportEvent
+{
+	 var TaskId : UUID
+
+	 var Analyzer : String
+	 var Priority : Boolean 
+	 
+	 new (model : TaskModel){
+	 	TaskId = model.TaskId
+	 	Analyzer = model.Analyzer
+	 	Priority = model.Priority
+	 }
+}

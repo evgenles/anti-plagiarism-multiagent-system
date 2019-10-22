@@ -1,0 +1,104 @@
+<html xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <link href="https://fonts.googleapis.com/css?family=Alfa+Slab+One|Merienda"
+          rel="stylesheet"/>
+
+    <link rel="stylesheet"
+          href="https://fonts.googleapis.com/css?family=Overpass+Mono:300,400,600,700|Overpass:100,100i,200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i&subset=latin-ext"/>
+
+    <link rel="stylesheet" th:href="@{/site.css}"/>
+    <script th:src="@{/site.js}" defer></script>
+</head>
+
+<body>
+<header>
+    <div class="head-text">
+        <span class="abbriviature" th:text="${shortName}">APMS</span>
+        <span class="description" th:text="${appName}">The anti-plagitarism multiagent system </span>
+    </div>
+
+</header>
+<menu>
+    <li><a href=#agents  id="agentLink">Agents</a></li>
+    <li><a href=#tasks id="taskLink">Tasks</a></li>
+    <li><a href=#computers>Computers</a></li>
+</menu>
+
+<main>
+    <div id="agents" class="info">
+        <div class="info-header">
+            <span>List of agents</span>
+<!--            <div class="actions">-->
+<!--                <a id="agents-add-btn" class="btn-ops btn-add">-->
+<!--                    <span class="icon">+</span>-->
+<!--                    <span class="text">ADD</span>-->
+<!--                </a>-->
+<!--                <a class="btn-ops btn-save">-->
+<!--                    <span class="text">Save</span>-->
+<!--                </a>-->
+<!--            </div>-->
+        </div>
+        <div id="agents-table" class="table">
+            <div class="row row-header">
+                <div class="cell"> Ip</div>
+                <div class="cell"> Name</div>
+                <div class="cell"> Active</div>
+            </div>
+
+        </div>
+    </div>
+
+    <div id="tasks" class="info">
+        <div class="info-header">
+            <span>List of tasks</span>
+            <div class="actions">
+                <a id="task-add-btn" class="btn-ops btn-add" href="#newTask">
+                    <span class="icon">+</span>
+                    <span class="text">ADD</span>
+                </a>
+<!--                <a class="btn-ops btn-save">-->
+<!--                    <span class="text">Save</span>-->
+<!--                </a>-->
+            </div>
+        </div>
+        <div id="tasks-table" class="table">
+            <div class="row row-header">
+                <div class="cell"> Id</div>
+                <div class="cell"> AgentId</div>
+                <div class="cell"> Name</div>
+                <div class="cell"> Active</div>
+                <div class="cell"> Complited %</div>
+                <div class="cell"> Need %</div>
+            </div>
+        </div>
+    </div>
+    <div id="taskInfo" class="window">
+        <div id="taskInfoTable" class="table">
+        </div>
+    </div>
+    <div id="newTask" class="window">
+        <form id="newTaskForm" class="table">
+            <div class="row">
+                <div class="cell">Name:</div>
+                <input class="cell" name="name" type="text" placeholder="Name">
+            </div>
+            <div class="row">
+                <div class="cell">File:</div>
+                <input class="cell" type="file" name="file">
+            </div>
+            <div class="row">
+                <div class="cell">Priority:</div>
+                <input class="cell" type="checkbox" name="priority">
+            </div>
+            <div class="row">
+                <div class="cell">Analyzers:</div>
+                <select class="cell" name="analyzers" multiple>
+                    <option>Etxt</option>
+                </select>
+            </div>
+            <button type="submit">Add</button>
+        </form>
+    </div>
+</main>
+</body>
+</html>

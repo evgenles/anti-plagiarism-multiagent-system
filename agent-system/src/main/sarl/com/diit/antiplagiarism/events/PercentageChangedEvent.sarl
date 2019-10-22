@@ -1,0 +1,20 @@
+/** 
+ * 
+ */
+package com.diit.antiplagiarism.events
+
+import java.util.UUID
+
+/** 
+ * @author lesov
+ * 
+ */
+event PercentageChangedEvent{
+	var TaskId : UUID
+	var Percentage : double
+	
+	new(taskId:UUID, percentage:double){
+		TaskId = taskId
+		Percentage = percentage
+	}
+}

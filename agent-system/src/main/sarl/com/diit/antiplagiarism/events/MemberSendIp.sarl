@@ -1,0 +1,16 @@
+/** 
+ * 
+ */
+package com.diit.antiplagiarism.events
+
+/** 
+ * @author lesov
+ * 
+ */
+event MemberSendIp{
+	var Ip :String
+	
+	new (ip : String){
+	Ip=ip
+		}
+}

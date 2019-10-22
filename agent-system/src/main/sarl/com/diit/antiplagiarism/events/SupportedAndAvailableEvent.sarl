@@ -1,0 +1,13 @@
+package com.diit.antiplagiarism.events
+
+import java.util.UUID
+
+event SupportedAndAvailableEvent
+{
+	 var TaskId : UUID
+    
+	 
+	 new (taskId : UUID){
+	 	TaskId = taskId
+	 }
+}

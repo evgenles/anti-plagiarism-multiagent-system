@@ -1,0 +1,31 @@
+package com.diit.antiplagiarism.models
+
+import java.util.UUID
+
+class TaskModel {
+	public var TaskId : UUID = UUID.randomUUID
+	public var ParrentID : UUID
+    public var Name : String
+	public var Percentage : int
+	public var Path : String
+	public var AgentId : UUID
+	public var State : String
+	public var Url : String
+	public var Data : byte[]
+	public var Analyzer : String
+	public var Priority : Boolean 
+	public var IsAssigned : Boolean = false
+	
+	new (name : String, url : String){
+		Name = name
+		Url = url
+	}
+	
+	new (data : byte[], analyzer : String, parrentId :UUID, priority:Boolean = false) {
+		Data = data
+		Analyzer = analyzer
+		Priority = priority
+		ParrentID = parrentId
+	}
+	
+}

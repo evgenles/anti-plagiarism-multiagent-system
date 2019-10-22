@@ -1,0 +1,85 @@
+//package com.diit.antiplagiarism.environment
+//
+//import io.janusproject.kernel.^space.AbstractEventSpace
+//import java.util.UUID
+//import java.io.Serializable
+//import io.janusproject.services.distributeddata.DistributedDataStructureService
+//import io.sarl.lang.core.SpaceID
+//import io.janusproject.kernel.repository.UniqueAddressParticipantRepository
+//import io.sarl.util.Collections3
+//import io.janusproject.services.distributeddata.DMap
+//import io.sarl.lang.core.Event
+//import io.sarl.lang.core.EventListener
+//import javax.inject.Inject
+//import io.janusproject.services.network.NetworkService
+//import io.sarl.lang.core.Address
+//
+//class NetworkSpace extends AbstractEventSpace implements IPhysicSpace {
+//	
+//	
+//	val entities : DMap<UUID, Serializable>
+//    val KEY_CREATORID : String = "creatorID"
+//    
+//    val agents : UniqueAddressParticipantRepository<UUID>;
+//
+//	@Inject
+//	var network : NetworkService
+//	
+//	 new(id : SpaceID, factory : DistributedDataStructureService) {
+//		super(id, factory)
+//		this.agents = new UniqueAddressParticipantRepository<UUID>(id.toString + "-antiplagiarism-agents", factory)
+//		this.entities = factory.getMap(id.toString + "-physicObjects")
+//	}
+//
+//	@Override
+//	def getParticipants() : io.sarl.lang.util.SynchronizedSet<java.util.UUID> {
+//		synchronized (this.agents) {
+//			return Collections3.unmodifiableSynchronizedSet(this.agents.getParticipantIDs());
+//		}
+//	}
+//
+//	def getCreatorID() : UUID {
+//		return this.entities.get(KEY_CREATORID) as UUID;
+//	}
+//
+//	def fireAsync(^agent : EventListener, ^event : Event) {
+//		this.executorService.submit(new com.diit.antiplagiarism.environment.AsyncRunner(^agent, ^event));
+//	}
+//
+//	def bindBody(^agent : EventListener)  {
+//		var a = new Address(spaceID, ^agent.ID)
+//		synchronized (this.participantInternalDataStructure) {
+//			this.participantInternalDataStructure.registerParticipant(a, ^agent)
+//		}
+//		
+//	}
+//
+//	def unbindBody(^agent : EventListener) {
+//		this.entities.remove(^agent.ID)
+//		synchronized (this.participantInternalDataStructure) {
+//			this.participantInternalDataStructure.unregisterParticipant(^agent)
+//		}
+//	}
+//	def putOnEventBus(^event : Event, scope : UUID ) : Boolean {
+//			synchronized (this.agents) {
+//				for (^agent as EventListener : this.agents.listeners) {
+//					if (scope.equals(^agent.getID())) {
+//						fireAsync(^agent, ^event);
+//						return true;
+//					}
+//				}
+//				return false;
+//			}
+//		}
+//
+//	
+//	def putOnNetwork(^event : Event, scope : UUID) {
+//			try {
+//				this.network.publish(new UUIDScope(scope), ^event );
+//			} catch (e:Exception) {
+//				this.logger.kernelLogger.severe(String.format(
+//					"Cannot notify over the network; scope={0}, event={1}, exception={2}", scope, ^event , e)); //$NON-NLS-1$
+//			}
+//		}
+//
+//}

@@ -1,0 +1,164 @@
+/** 
+ * 
+ */
+package com.diit.antiplagiarism.agents
+
+import io.sarl.core.AgentKilled
+import io.sarl.core.AgentSpawned
+import io.sarl.core.ContextJoined
+import io.sarl.core.ContextLeft
+import io.sarl.core.Destroy
+import io.sarl.core.Initialize
+import io.sarl.core.Logging
+import io.sarl.core.MemberJoined
+import io.sarl.core.MemberLeft
+import io.sarl.core.DefaultContextInteractions
+import java.util.List
+import com.diit.antiplagiarism.events.CheckSupportEvent
+import com.diit.antiplagiarism.events.SupportedAndAvailableEvent
+import com.diit.antiplagiarism.events.TaskStartedEvent
+import com.diit.antiplagitarism.IAntiplagitarismExequtable
+import com.diit.antiplagitarism.EtxtAntiplagitarismExequtable
+import org.apache.commons.io.FileUtils
+import java.nio.file.Files
+import java.io.File
+import com.diit.antiplagiarism.events.ProgramStartResultEvent
+import java.util.UUID
+import io.sarl.core.Schedules
+import com.diit.antiplagiarism.events.PercentageChangedEvent
+import com.diit.antiplagiarism.events.AnalizeComplitedEvent
+import com.diit.antiplagiarism.events.TaskTimeoutedEvent
+import com.diit.antiplagiarism.events.MemberSendIp
+import com.diit.antiplagiarism.helpers.DomainHelper
+
+/** 
+ * @author lesov
+ * 
+ */
+agent NodeAgent {
+	uses DefaultContextInteractions, Logging, Schedules
+	
+	var haveWork : Boolean = false
+	var started : Boolean = false
+	var supportedAnalyzers : List<String> = #["Etxt"]
+	var taskWorker : IAntiplagitarismExequtable = new EtxtAntiplagitarismExequtable
+	var directoryPath : File = new File(System.getProperty("user.home") + "/apms")
+	var activeTask : UUID
+	var activeTime : int = 0
+	var timeout : int = 30*60*1000
+	
+	on CheckSupportEvent {
+		//info("Check support recived")	
+	    var task  =	occurrence
+		if(!haveWork){
+			if (supportedAnalyzers.contains(task.Analyzer)) {
+				info("Accept task sended. TaskId: " + task.TaskId)
+				emit(new SupportedAndAvailableEvent(task.TaskId))
+			}
+		}
+	}
+	on TaskStartedEvent [this.isMe(occurrence.AgentId)] {
+		synchronized (haveWork) {
+			info("HaveWork: "+ haveWork )
+			if(!haveWork){
+				haveWork = true
+				activeTask = occurrence.TaskId
+				info("now task: " + activeTask)
+				var outName : String =""
+				if (directoryPath.exists && directoryPath.isDirectory) {
+				 	val files = directoryPath.listFiles
+										 		.filter[name.startsWith("apms")]
+										 		.sortBy[Integer.parseInt(name.substring(4).replaceAll(".txt", ""))]
+								
+					if (files.length > 0) {
+						val lastName = files.last.name.substring(4).replaceAll(".txt", "");
+						info("last file: "+ lastName)
+						outName = "apms" + (Integer.parseInt(lastName) + 1).toString
+					}
+					else {
+						outName = "apms0"	
+					}
+				}
+				info(directoryPath + "\\" + outName + ".txt")
+				FileUtils.writeByteArrayToFile(new File(directoryPath + "\\" + outName + ".txt"), occurrence.Data)
+				val started = taskWorker.StartWork(directoryPath + "\\" + outName + ".txt")
+				activeTime = 0
+				if (!started.successStart) { 
+					haveWork = false;
+					taskWorker.Cancel;
+				}
+				else{
+					started = true;
+				}
+				emit(new ProgramStartResultEvent(activeTask, started))
+				
+			}
+		}
+	}
+	
+	on Initialize {
+		
+		// Event trigger before the agent begin to live or to be used.
+		// You should put all the initialization statements in this block of code.
+		info("The agent was started.")
+		emit(new MemberSendIp(DomainHelper.GetIp))
+		val task = task("send_process_data")
+		task.every(10000) [
+			if(started){
+				val percentage = taskWorker.GetProcessPercentage
+				if(percentage>0){
+					emit(new PercentageChangedEvent(activeTask, percentage))
+				}
+				if(percentage == 100){
+					var result = taskWorker.GetResult
+					emit(new AnalizeComplitedEvent(activeTask, result))
+					started = false;
+					haveWork = false;
+					activeTask = null;
+				}
+				if(activeTime >= timeout){
+					var result = taskWorker.Cancel	
+					haveWork = false
+					emit(new TaskTimeoutedEvent(activeTask, result))
+					activeTask = null
+					started = false;
+				}
+				activeTime+=10000
+			}	
+		]
+	}
+
+	on Destroy {
+		// Event trigger when the agent is destroyed from the system.
+		// You should put all the resource releasing statements in this block of code.
+		info("The agent was stopped.")
+	}
+
+	on AgentSpawned {
+		// A new agent has been spawned in our context.
+	}
+
+	on AgentKilled {
+		// A new agent has been killed in our context.
+	}
+
+	on ContextJoined {
+		// Event trigger when an agent of the level joins a shared context.
+		// Sent to a agent of the same level.
+	}
+
+	on ContextLeft {
+		// Event trigger when an agent of the level jleaves a shared context.
+		// Sent to a agent of the same level.
+	}
+
+	on MemberJoined {
+		// Event trigger when an agent joins one of our shared super-holons.
+		// Sent to all members of the considered super-holon.
+	}
+
+	on MemberLeft {
+		// Event trigger when an agent leaves one of our shared super-holons.
+		// Sent to all members of the considered super-holon.
+	}
+}

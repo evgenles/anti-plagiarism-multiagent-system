@@ -1,0 +1,13 @@
+package com.diit.antiplagiarism.events
+
+import com.diit.antiplagitarism.ResultData
+import java.util.UUID
+
+event AnalizeComplitedEvent {
+	var ResultData : ResultData
+    var TaskId : UUID
+	new (taskId : UUID, resultData : ResultData) {
+		TaskId = taskId
+		ResultData = resultData
+	}
+}

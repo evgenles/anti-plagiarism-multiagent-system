@@ -1,0 +1,21 @@
+/** 
+ * 
+ */
+package com.diit.antiplagiarism.events
+
+import java.util.UUID
+import com.diit.antiplagitarism.StartData
+
+/** 
+ * @author lesov
+ * 
+ */
+event TaskTimeoutedEvent{
+	var TaskId : UUID
+	var Result : StartData
+	
+	new (taskId: UUID, result: StartData){
+		TaskId = taskId
+		Result = result
+	}
+}

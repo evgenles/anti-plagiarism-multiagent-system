@@ -1,0 +1,181 @@
+/** 
+ * 
+ */
+package com.diit.antiplagiarism.agents
+
+import io.sarl.core.AgentKilled
+import io.sarl.core.AgentSpawned
+import io.sarl.core.ContextJoined
+import io.sarl.core.ContextLeft
+import io.sarl.core.Destroy
+import io.sarl.core.Initialize
+import io.sarl.core.Logging
+import io.sarl.core.MemberJoined
+import io.sarl.core.MemberLeft
+import java.util.List
+import com.diit.antiplagiarism.models.TaskModel
+import io.sarl.core.DefaultContextInteractions
+import java.util.UUID
+import com.diit.antiplagiarism.events.CheckSupportEvent
+import io.sarl.core.Schedules
+import java.util.ArrayList
+import com.diit.antiplagiarism.events.SupportedAndAvailableEvent
+import com.diit.antiplagiarism.events.TaskStartedEvent
+import com.diit.antiplagiarism.events.PercentageChangedEvent
+import com.diit.antiplagiarism.events.TaskTimeoutedEvent
+import com.diit.antiplagiarism.events.AnalizeComplitedEvent
+import java.nio.charset.StandardCharsets
+import com.diit.antiplagiarism.events.ProgramStartResultEvent
+import java.util.function.Function
+import com.diit.antiplagitarism.webadmin.WebAdminApplication
+import com.diit.antiplagitarism.socket.models.AddTaskDto
+import com.diit.antiplagitarism.socket.master.ProxyWebCommunicator
+import com.diit.antiplagitarism.socket.models.SendAssignedDto
+import com.diit.antiplagitarism.socket.models.PercentageDto
+import com.diit.antiplagitarism.socket.models.ResultDto
+import io.sarl.core.InnerContextAccess
+import com.diit.antiplagiarism.events.MemberSendIp
+import com.diit.antiplagitarism.socket.models.AgentJoinedDto
+
+/** 
+ * @author lesov
+ * 
+ */
+agent Master2Agent {
+	uses DefaultContextInteractions, Logging, Schedules, InnerContextAccess
+
+	var tasks : List<TaskModel> = new ArrayList<TaskModel>
+	var webCommunicator = new ProxyWebCommunicator()
+	def AddTask(taskDto:AddTaskDto):Boolean {
+		//info("Create task with file data")
+		var mainId = taskDto.taskId
+		for (needAnalyzed : taskDto.analyzers) {
+			var task : TaskModel = new TaskModel(taskDto.file, needAnalyzed, mainId, taskDto.priority)
+			tasks.add(task)
+			
+			emit(new CheckSupportEvent(task))
+			//info("Check support sended")
+		
+			}
+			return true;
+		
+	}
+		
+		on SupportedAndAvailableEvent {
+		info('SupportedAndAvailableEvent received. TaskId ' + occurrence.TaskId)
+		var accepted = tasks.filter[TaskId == occurrence.TaskId].last
+		info('SupportedAndAvailableEvent received. TaskId ' + occurrence.TaskId + ' Is assigned: ' + accepted.IsAssigned)
+		if(!accepted.IsAssigned){
+			accepted.IsAssigned  = true
+			accepted.AgentId = occurrence.source.UUID
+			info("For task "+accepted.TaskId +" added agent "+accepted.AgentId)
+			emit(new TaskStartedEvent(accepted))
+		}
+	}
+	on ProgramStartResultEvent {
+		var taskId = occurrence.Taskid
+		var task = tasks.filter[TaskId == taskId].last
+		var result = occurrence.StartData
+		info("For task " + taskId + " started evenet " + result.successStart)
+		if (result.successStart) {
+			warning("Task " + taskId + " has started")
+		} else {
+			error("Task " + taskId + " can`t start error: " + result.message)
+		}
+		webCommunicator.SendAssigned(new SendAssignedDto(task.ParrentID, occurrence.source.UUID))
+		
+	}
+	on PercentageChangedEvent {
+		var taskId = occurrence.TaskId
+		var percentage = occurrence.Percentage
+		info("Task " + taskId + " has percentage " + percentage)
+		var task = tasks.filter[TaskId == taskId].last
+		webCommunicator.SendPercentage(new PercentageDto(task.ParrentID, percentage))
+	}
+	
+	on TaskTimeoutedEvent{
+		var task = occurrence.TaskId
+		var result = occurrence.Result
+		if (result.successStart) {
+			warning("Task " + task + " has been timeouted and successful closed")
+		} 
+		else{
+			error("Task "+ task + " has been timeouted and doesn`t close with error: "+result.message)
+		}
+	}
+	on AnalizeComplitedEvent{
+		var taskId = occurrence.TaskId
+		var result = occurrence.ResultData
+
+		var task = tasks.filter[TaskId == taskId].last
+		
+		info("Task " + taskId + " successfull complited " + 
+		"\n\runique: "+result.percentage + 
+		"\n\rerror rate: "+ result.errorRate + 
+		"\n\rlogs: "+result.log )
+		
+		webCommunicator.SendResult(new ResultDto(task.ParrentID, result.percentage, result.errorRate, result.log))
+	}
+	
+	on Initialize {
+		// Event trigger before the agent begin to live or to be used.
+		// You should put all the initialization statements in this block of code.
+		info("The agent was started.")
+		val task = task("waiting_for_partner")
+	    
+	     webCommunicator.AddTaskHandler = [taskDto|AddTask(taskDto)]
+ 
+		task.every(1000) [
+			if (defaultSpace.participants.size > 1) {
+		//		 AddTask(new AddTaskDto("Test", false, #["Etxt"], 
+		//		"Тестовые данные\n\rТестовые данные\n\rТестовые данные\n\rТестовые данные\n\rТестовые данные\n\rТестовые данные\n\r".
+		//			getBytes(StandardCharsets.UTF_8)))
+				//task.cancel
+			}
+		]
+	}
+
+	on Destroy {
+		// Event trigger when the agent is destroyed from the system.
+		// You should put all the resource releasing statements in this block of code.
+		info("The agent was stopped.")
+	}
+
+	on AgentSpawned {
+				// A new agent has been spawned in our context.
+	}
+
+	on AgentKilled {
+		// A new agent has been killed in our context.
+	}
+
+	on ContextJoined {
+		if(!occurrence.fromMe) info("Joined: " + occurrence.class + " Address: " + occurrence.source)
+		
+		
+		// Event trigger when an agent of the level joins a shared context.
+		// Sent to a agent of the same level.
+	}
+
+	on ContextLeft {
+		if(!occurrence.fromMe) info("Left: " + occurrence.class + " Address: " + occurrence.source)
+		
+		// Event trigger when an agent of the level jleaves a shared context.
+		// Sent to a agent of the same level.
+	}
+
+	on MemberSendIp {
+		info(occurrence.Ip)
+		webCommunicator.SendAgentJoined(new AgentJoinedDto(occurrence.source.UUID, occurrence.Ip))
+	}
+	on MemberJoined {
+		// Event trigger when an agent joins one of our shared super-holons.
+		// Sent to all members of the considered super-holon.
+	}
+
+	on MemberLeft {
+		webCommunicator.SendAgentLeft(occurrence.agentID)
+		// Event trigger when an agent leaves one of our shared super-holons.
+		// Sent to all members of the considered super-holon.
+	}
+}

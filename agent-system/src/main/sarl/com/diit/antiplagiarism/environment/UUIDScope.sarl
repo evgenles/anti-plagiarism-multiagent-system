@@ -1,0 +1,22 @@
+//package com.diit.antiplagiarism.environment
+//
+//import io.sarl.lang.core.Scope
+//import java.util.UUID
+//
+//class UUIDScope implements Scope<UUID> {
+//
+//	var id : UUID;
+//
+//	new (id : UUID) {
+//		this.id = id;
+//	}
+//	
+//	def getID() {
+//		return this.id;
+//	}
+//	
+//	@Override
+//	def matches(element :UUID) : boolean {
+//				return this.id.equals(element);
+//	}
+//}

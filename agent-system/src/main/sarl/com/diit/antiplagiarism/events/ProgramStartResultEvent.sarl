@@ -1,0 +1,21 @@
+/** 
+ * 
+ */
+package com.diit.antiplagiarism.events
+
+import java.util.UUID
+import com.diit.antiplagitarism.StartData
+
+/** 
+ * @author lesov
+ * 
+ */
+event ProgramStartResultEvent{
+	var Taskid : UUID
+	var StartData : StartData
+	
+	new (taskId: UUID, startData:StartData){
+		Taskid = taskId
+		StartData = startData
+	}
+}
